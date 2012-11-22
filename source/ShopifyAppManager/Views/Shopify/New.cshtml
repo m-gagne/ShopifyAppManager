@@ -1,0 +1,160 @@
+﻿<!-- Don't judge my by this code, it's late, I'm tired -->
+<!-- and I just need to get this to work for you guys. -->
+<!-- If you actually read this let me know https://www.twitter.com/marc_gagne -->
+<!-- But srs, why are you reading this? -->
+
+<div class="well">    
+    <ul class="nav nav-tabs">
+      <li>
+        <a href="/Shopify">Applications</a>
+      </li>
+      <li class="active"><a href="#">Create New Application</a></li>
+    </ul>
+
+    <div id="infoScreen" class="hero-unit">
+        <ol>
+            <li id="step_1">Create a Shopify Partner Account (or Login to existing one) <a href="https://app.shopify.com/services/partners/auth/login" id="btn_step_1" target="new" class="btn btn-primary">Do it</a></li>
+            <li id="step_2">
+                <div id="nameGroup" class="control-group">
+                    <label for="name">Enter your application name (example: 'My Awesome Windows 8 app':</label>
+                    <input type="text" id="name" />
+                </div>
+            </li>
+            <li id="step_3">Generate Application Site <a id="CreateAppSite" class="btn btn-primary">Do it</a>
+                <div class="label label-info" title="This will create a page that Shopify will use to validate your API credentials and send the authorization token you need to complete the OAuth request.">?</div>
+            </li>
+            <li id="step_4">Create a new app <a id="CreateShopifyApp" target="new" class="btn btn-primary">Do it</a>
+                <div class="label label-info" title="To use the Shopify API you must register an app with them. Normally this is a web app.">?</div>
+
+                <div id="CreateAppHelp" class="well well-large small-font">
+                    <ul>
+                        <li>For 'Application Name' enter: <input type="text" id="AppName"/></li>
+                        <li>Leave 'Auth Type' set to 'OAuth2'</li>
+                        <li>For 'Application URL' enter: <input type="text" id="AppUrl"/></li>
+                        <li>Agree to agreements</li>
+                        <li>Click 'Create Application'</li>
+                        <li><a id="btnDoneStep4" class="btn btn-info">Ok I did it...</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li id="step_5">
+                <div class="well">
+                    If you haven't already you will need to create a test shop. <a href="https://app.shopify.com/services/partners/api_clients/test_shops" target="_new" class="btn btn-info">Click here</a> to create a test shop.
+                </div>
+            </li>
+            <li id="step_6">
+                <div id="GetAppDetails" class="well well-large small-font">
+                    <div class="control-group">
+                        <label for="ShopName">Shop Name</label>
+                        <input type="text" id="ShopName"/>
+                        <br />
+                        <span class="label">Hint: This is the shop id, which can be found in the url. For example: https://<span class="label-info">rempel-group2668</span>.myshopify.com/admin</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="ApiKey">API Key</label>
+                        <input type="text" id="ApiKey"/>
+                        <br />
+                        <span class="label">Hint: This is found in your <a href="https://app.shopify.com/services/partners/api_clients" target="_new">app settings</a> by clicking on your app name.</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="SharedSecret">Shared Secret</label>
+                        <input type="text" id="SharedSecret"/>
+                    </div>
+                    <div class="control-group">
+                        <a class="btn btn-info" id="btnGetCode">Get Authentication Token</a>
+                    </div>
+                
+                </div>
+            </li>
+        </ol>
+    </div>
+</div>
+
+
+
+
+
+<!-- Don't judge my by this code, it's late, I'm tired -->
+<!-- and I just need to get this to work for you guys. -->
+<!-- If you actually read this let me know https://www.twitter.com/marc_gagne -->
+<!-- But srs, why are you reading this? -->
+
+<script>
+    var infoScreen = $("#infoScreen");
+    var appDetails = $("#AppDetails").hide();
+    var step1 = $("#step_1");
+    var step2 = $("#step_2").hide();
+    var step3 = $("#step_3").hide();
+    var step4 = $("#step_4").hide();
+    var step5 = $("#step_5").hide();
+    var step6 = $("#step_6").hide();
+    var createShopifyApp = $("#CreateShopifyApp").attr("disabled", "disabled");
+    var cookie = $.cookie;
+    var appGuid = "";
+        
+    $("#proceed").click(function () {
+        cookie("skipWarning", "true")
+        hideWarning(150);
+    });
+
+    $("#btn_step_1").click(function () {
+        step2.fadeIn();
+        step3.fadeIn();
+    });
+
+    $("#btnDoneStep4").click(function () {
+        step5.fadeIn();
+        step6.fadeIn();
+    });
+
+    $("#CreateAppSite").click(function () {
+        var nameControl = $("#nameGroup");
+        var appName = $("#name").val().trim();
+        if (appName == "") {
+            nameControl.addClass("error");
+            return;
+        }
+        $.post("/Shopify/Create", { name: appName }, function (data) {
+            $("#CreateAppSite").fadeOut();
+            $("#AppName").val(data.ApplicationName);
+            $("#AppUrl").val(data.ApplicationUrl);
+            appGuid = data.ApplicationGuid;
+
+            appDetails.fadeIn();
+            step4.fadeIn();
+            createShopifyApp.attr("href", "https://app.shopify.com/services/partners/api_clients/new").removeAttr("disabled");
+        });
+    });
+
+    var validateHasText = function (inputId) {
+        var inputControl = $("#" + inputId);
+        var intputValue = inputControl.val().trim();
+        if (intputValue == "") {
+            inputControl.parent().addClass("error");
+            return false;
+        }
+
+        inputControl.parent().removeClass("error");
+        return true;
+    }
+    var validateAppSettings = function () {
+        if (validateHasText("ShopName") == false ||
+            validateHasText("ApiKey") == false ||
+            validateHasText("SharedSecret") == false
+        ) {
+            return false;
+        }
+
+        return true;
+    };
+
+    $("#btnGetCode").click(function () {
+        if (validateAppSettings())
+        {
+            var shopName = $("#ShopName").val().trim();
+            var apiKey = $("#ApiKey").val().trim();
+            var sharedSecret = $("#SharedSecret").val().trim();
+            document.location = "/Shopify/init?AppGuid=" + appGuid + "&ShopName=" + shopName + "&ApiKey=" + apiKey + "&SharedSecret=" + sharedSecret;
+        }
+    });
+</script>

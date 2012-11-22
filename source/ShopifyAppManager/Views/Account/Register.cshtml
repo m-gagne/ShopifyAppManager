@@ -1,0 +1,28 @@
+﻿@model ShopifyAppManager.Models.RegisterModel
+
+<section id="registerForm" class="hero-unit">
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary()
+
+        <fieldset>
+            <legend>Registration Form</legend>
+            @Html.LabelFor(m => m.UserName)
+            @Html.TextBoxFor(m => m.UserName)
+            @Html.LabelFor(m => m.Password)
+            @Html.PasswordFor(m => m.Password)
+            @Html.LabelFor(m => m.ConfirmPassword)
+            @Html.PasswordFor(m => m.ConfirmPassword)
+
+            <p>
+                <input type="submit" value="Register" class="btn btn-primary"/>
+            </p>
+            
+        </fieldset>
+    }
+</section>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

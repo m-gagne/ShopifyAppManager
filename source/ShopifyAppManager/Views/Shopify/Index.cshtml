@@ -1,0 +1,93 @@
+﻿<div id="warningScreen" class="hero-unit">
+    <div class="alert alert-error">
+        <strong>Warning!</strong> This system is meant to get you up and running quickly. This is not an example of how to implement a good security system based on OAuth. For production code you should have a web app that managed and secures your credentials. <strong>NEVER EVER</strong> store an authentication code in your application directly.
+    </div>    
+
+
+    <div class="alert alert-info">
+        <p>You read the warning right? Ok let's get you an authentication token so you can start hacking your app!</p>
+        <center><button id="proceed" class="btn btn-danger">Yeah I get it, just give me the goods</button></center>
+    </div>
+</div>
+
+<div id="mainScreen" class="well">
+    <ul class="nav nav-tabs">
+      <li class="active">
+        <a href="#">Applications</a>
+      </li>
+      <li><a href="/Shopify/New">Create New Application</a></li>
+    </ul>
+
+    <div id="infoScreen" class="hero-unit">
+        @{var apps = (List<ShopifyAppManager.Models.ShopifyApp>)ViewData["Applications"];}
+
+        @if (apps.Count == 0)
+        {
+            <div class="alert alert-info">You have no yet created an app. <a href="Shopify/New" class="btn btn-info">Click Here</a> to create an app.</div>
+        }
+        else
+        {
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Shopify Application Name</th>
+                        <th>Access Token</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                     @foreach (var app in apps)
+                     {
+                         <tr>
+                            <td>@app.ApplicationName</td>
+                            <td>@(String.IsNullOrEmpty(app.AccessToken) ? "unavailable" : app.AccessToken)</td>
+                             <td>
+                                 <a href="Shopify/Test?id=@app.ApplicationGuid" class="btn btn-info">Test</a>
+                                 <a id="@app.ApplicationGuid" data-appname="@app.ApplicationName" class="btn btn-warning delete">Delete</a>
+                             </td>
+                         </tr>
+                     }
+                </tbody>
+            </table>
+        }
+
+    </div>
+</div>
+
+
+<script>
+    var mainScreen = $("#mainScreen").hide();
+    var cookie = $.cookie;
+
+    var hideWarning = function (delay) {
+        $("#warningScreen").fadeOut(delay, function () {
+            mainScreen.fadeIn(delay);
+        });
+    };
+
+    if (cookie("skipWarning") === "true")
+    {
+        hideWarning(0);
+    }
+        
+    $("#proceed").click(function () {
+        cookie("skipWarning", "true")
+        hideWarning(150);
+    });
+
+    $(".delete").click(function (e) {
+        var anchor = $(e.target);
+        if (confirm("Are you sure you want to delete the application '" + anchor.data("appname") + "'"))
+        {
+            $.ajax({
+                url: '/Shopify/destroy',
+                type: 'DELETE',
+                data:  {id: anchor.attr("id")},
+                success: function(response) { 
+                    document.location = document.location;
+                }
+            });
+        }
+    });
+
+</script>

@@ -1,0 +1,57 @@
+﻿@{var app = (ShopifyAppManager.Models.ShopifyApp)ViewData["App"];}
+@{var data = (dynamic)ViewData["ProductData"];}
+
+
+<div class="well">
+    <p><a href="/Shopify" class="btn btn-primary"><i class="icon-home"></i> Return to Applications</a></p>
+    
+    <div class="alert alert-info">
+        Sample C# Code using the <a href="https://github.com/cmcdonaldca/shopify.net">shopify.net API</a>. This example pulls requests a list of all products and converts it to a dynamic data object (from JSON).
+    </div>
+    <pre>
+        ShopifyAuthorizationState authState = new ShopifyAuthorizationState
+        {
+            ShopName = "@app.ShopName",
+            AccessToken = "@app.AccessToken"
+        };
+               
+        var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
+
+        // The JSON Data Translator will automatically decode the JSON for you
+        dynamic data = api.Get("/admin/products.json");        
+    </pre>
+
+    <div class="alert alert-info">
+        Here is a list of your products & variants
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Test</th>
+            </tr>
+        </thead>
+        <tbody>
+                @foreach (var product in data.products)
+                {
+                    <tr>
+                        <td colspan="3"><strong>@product.title</strong></td>
+                    </tr>
+                    
+                    foreach (var variant in product.variants)
+                    {
+                        <tr>
+                            <td>@variant.title</td>
+                            <td>@variant.price</td>
+                            <td>@variant.inventory_quantity</td>
+                        </tr>
+                    }
+                }
+        </tbody>
+    </table>
+
+
+
+</div>

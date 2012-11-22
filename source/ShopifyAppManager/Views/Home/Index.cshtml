@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.Title = "Shopify App Manager";
+}
+@section featured {
+    <section class="featured">
+        <div class="hero-unit">
+            
+            <p>Welcome to the Shopify App Manager. This tool allows you to authorize your application and recieve the token needed to make API calls from non web based applications.</p>
+                
+            <p>You will need to <button id="createAccountButton" class="btn btn-info">Create an account</button> or <button id="loginButton" class="btn btn-primary">Log in</button> to proceed.</p>
+            
+        </div>
+    </section>
+}
+
+<script>
+    $(document).ready(function () {
+        $("#createAccountButton").click(function () {
+            document.location = "/Account/Register";
+        });
+
+        $("#loginButton").click(function () {
+            document.location = "/Account/Login";
+        });
+    });
+</script>
